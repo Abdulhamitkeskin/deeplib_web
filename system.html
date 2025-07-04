@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>Kütüphane Alan Yönetimi Sistemi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a0f3d 0%, #3d1a7a 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex; /* Footer'ı alta sabitlemek için */
+            flex-direction: column; /* Footer'ı alta sabitlemek için */
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-content {
+            flex: 1; /* Ana içeriğin boş alanı doldurmasını sağlar, footer'ı aşağı iter */
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px; /* Footer'dan biraz boşluk bırakır */
+            max-width: 1400px; /* Container ile aynı genişlik */
+            margin-left: auto; /* Ortalamak için */
+            margin-right: auto; /* Ortalamak için */
+            padding: 0 30px; /* Kenarlara boşluk */
+        }
+
+        .library-layout {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .layout-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .library-map {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .shelf-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+
+        .shelf-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .shelf {
+            width: 60px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+            cursor: default; /* Tıklanabilirliği görsel olarak kaldırmak için */
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hover efekti kaldırıldı */
+        .shelf:hover {
+            transform: none; 
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2); 
+        }
+
+        .shelf.occupied {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+        }
+
+        .shelf.available {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .shelf-block {
+            width: 120px;
+            height: 80px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .entrance {
+            width: 100px;
+            height: 20px;
+            background: #6c757d;
+            border-radius: 10px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .entrance::before {
+            content: "GİRİŞ";
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: bold;
+        }
+
+        .video-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .video-status {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .video-player {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            background: #000;
+            margin-bottom: 20px;
+        }
+
+        .links-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px; /* Video bölümünden ayırmak için */
+        }
+
+        .link-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .link-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(5px);
+        }
+
+        .link-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 1.2em; /* İkon boyutunu artır */
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .legend-color.occupied {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+        }
+
+        .legend-color.available {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        /* Yeni Doluluk Oranı Göstergesi için CSS */
+        .occupancy-gauge-container {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .gauge-arc {
+            position: relative;
+            width: 200px;
+            height: 100px;
+            background-color: #28a745; /* Burası YEŞİL olmalı - Başlangıçta tüm alan BOŞ olduğu için */
+            border-radius: 100px 100px 0 0;
+            overflow: hidden;
+            margin: 0 auto;
+            border-bottom: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform-origin: bottom center;
+            transition: background-color 0.5s ease;
+        }
+
+        .gauge-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #dc3545; /* Burası KIRMIZI olmalı - Dolu alanı (yeşilin üzerinde dönecek kısım) temsil eder */
+            border-radius: 100px 100px 0 0;
+            transform-origin: bottom center;
+            transform: rotate(0deg); /* Başlangıçta tam dolu (kırmızı) */
+            transition: transform 0.5s ease-out;
+        }
+
+        .gauge-label {
+            margin-top: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                padding: 0 15px; /* Küçük ekranlarda boşluk azaltma */
+            }
+            
+            .shelf-row {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+        }
+
+        /* Footer Stillleri */
+        .footer {
+            background: #1a0f3d;
+            color: white;
+            padding: 3rem 0;
+            margin-top: auto; /* Bu otomatik olarak footer'ı aşağı iter */
+            width: 100%;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+            text-align: center;
+        }
+
+        .footer-left {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .footer-right {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .footer-center {
+            padding: 1rem;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .footer-logo {
+            height: 80px;
+            max-width: 100%;
+        }
+
+        .footer-link {
+            color: #ff4d4d; /* Bağlantıların normal rengi kırmızı olsun */
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: #667eea; /* Fare üzerine geldiğinde mor tonuna dönsün */
+            text-decoration: underline;
+        }
+
+        .footer-link i {
+            margin-right: 0.5rem;
+        }
+
+        .footer p {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .footer p:last-child {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            .footer-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .footer-center {
+                order: -1; /* Logoyu mobil görünümde üste taşır */
+            }
+        }
+
+    .fade-in {
+        animation: fadeInAnimation ease 1.5s;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+        opacity: 0; /* Başlangıçta gizli */
+    }
+
+    @keyframes fadeInAnimation {
+        0% {
+            opacity: 0;
+            transform: translateY(20px); /* Hafif yukarıdan gelsin */
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+        
+    </style>
+</head>
+
+<body>
+    <a href="index.html">
+    <img src="logo.png" alt="Deeplib Logo" style="max-height: 80px; width: auto; display: block; margin: 20px auto 10px;">
+</a>
+        
+    <div class="main-content fade-in">
+        <div class="library-layout">
+            <div class="layout-title">Kütüphane Krokisi</div>
+            <div class="library-map">
+                <div class="shelf-row">
+                    <div class="shelf-group">
+                        <div class="shelf occupied" data-shelf="14">14</div>
+                        <div class="shelf-block"></div>
+                        <div class="shelf occupied" data-shelf="9">9</div>
+                    </div>
+                    <div class="shelf-group">
+                        <div style="display: flex; gap: 10px;">
+                            <div class="shelf available" data-shelf="16">16</div>
+                            <div class="shelf available" data-shelf="15">15</div>
+                        </div>
+                        <div class="shelf-block"></div>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="shelf available" data-shelf="12">12</div>
+                            <div class="shelf available" data-shelf="11">11</div>
+                        </div>
+                    </div>
+                    <div class="shelf-group">
+                        <div class="shelf available" data-shelf="13">13</div>
+                        <div class="shelf-block"></div>
+                        <div class="shelf available" data-shelf="10">10</div>
+                    </div>
+                </div>
+                
+                <div class="shelf-row">
+                    <div class="shelf-group">
+                        <div class="shelf occupied" data-shelf="8">8</div>
+                        <div class="shelf-block"></div>
+                        <div class="shelf available" data-shelf="4">4</div>
+                    </div>
+                    <div class="shelf-group">
+                        <div style="display: flex; gap: 10px;">
+                            <div class="shelf available" data-shelf="6">6</div>
+                            <div class="shelf available" data-shelf="7">7</div>
+                            <div class="shelf available" data-shelf="5">5</div>
+                        </div>
+                        <div class="shelf-block"></div>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="shelf available" data-shelf="1">1</div>
+                            <div class="shelf occupied" data-shelf="2">2</div>
+                            <div class="shelf occupied" data-shelf="3">3</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="entrance"></div>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color occupied"></div>
+                    <span>Dolu</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color available"></div>
+                    <span>Boş</span>
+                </div>
+            </div>
+
+            <div class="occupancy-gauge-container">
+                <div class="gauge-arc">
+                    <div class="gauge-fill" id="gaugeFill"></div>
+                </div>
+                <div class="gauge-label">Doluluk Oranı</div>
+            </div>
+        </div>
+
+        <div class="video-section">
+            <div class="layout-title">📹 Kütüphane Görüntüleme Sistemi</div>
+            
+            <video class="video-player" id="videoPlayer" autoplay loop muted style="display: block;">
+                <source src="video.mp4" type="video/mp4">
+                Video desteklenmiyor.
+            </video>
+            
+            <div class="video-status" id="videoStatus">
+                <p>📡 Sistem bekleniyor... Video arka planda yüklenecek.</p>
+            </div>
+            
+            <div class="links-section">
+                <h3>🔗 Kaynak Dosyaları</h3>
+                <div class="link-item" onclick="window.open('https://github.com/Abdulhamitkeskin/deeplib', '_blank')">
+                    <div class="link-icon"><i class="fab fa-github"></i></div>
+                    <div>
+                        <strong>DeepLib GitHub Deposu</strong>
+                        <p>Proje kaynak kodlarına erişim</p>
+                    </div>
+                </div>
+                <div class="link-item" onclick="window.open('https://www.tensorflow.org/install/source?hl=tr', '_blank')">
+                    <div class="link-icon"><i class="fas fa-brain"></i></div>
+                    <div>
+                        <strong>TensorFlow Kurulum Rehberi</strong>
+                        <p>TensorFlow(GPU) destekli kurulum</p>
+                    </div>
+                </div>
+                <div class="link-item" onclick="window.open('https://opencv.org/docs/', '_blank')">
+                    <div class="link-icon"><i class="fas fa-camera"></i></div>
+                    <div>
+                        <strong>OpenCV Dokümantasyonu</strong>
+                        <p>Görüntü işleme kütüphanesi</p>
+                    </div>
+                </div>
+                <div class="link-item" onclick="window.open('https://drive.google.com/file/d/1PUHJFNRKVBLTX0cY6toV2tdRfzxRrF1z/view?usp=sharing', '_blank')"> <div class="link-icon"><i class="fas fa-folder-open"></i></div>
+                    <div>
+                        <strong>Ek Dosyalar ve Kaynaklar</strong>
+                        <p>Destekleyici dokümanlar ve veriler</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer" id="iletisim">
+        <div class="footer-container">
+            <div class="footer-left">
+                <p><strong>İletişim:</strong></p>
+                <p><a href="mailto:keskinabdulhamit512@gmail.com" class="footer-link">
+                    <i class="fas fa-envelope"></i>Email
+                </a></p>
+                <p><a href="tel:+905394422554" class="footer-link">
+                    <i class="fas fa-phone"></i>Telefon
+                </a></p>
+            </div>
+            <div class="footer-center">
+                <img src="logo.png" alt="DeepLib Logo" class="footer-logo">
+            </div>
+            <div class="footer-right">
+                <p><strong>Bizi Takip Edin:</strong></p>
+                <p><a href="https://github.com/Abdulhamitkeskin" target="_blank" class="footer-link">
+                    <i class="fab fa-github"></i>GitHub
+                </a></p>
+                <p><a href="https://linkedin.com/in/abdulhamit-keskin-3b7bb72a3" target="_blank" class="footer-link">
+                    <i class="fab fa-linkedin"></i>LinkedIn
+                </a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const videoPlayer = document.getElementById('videoPlayer');
+        const videoStatus = document.getElementById('videoStatus');
+        
+        // Raf durumu verisi
+        const shelfData = {
+            1: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            2: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            3: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Kırmızı', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            4: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Kırmızı', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            5: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Kırmızı', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            6: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Kırmızı', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            7: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            8: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            9: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            10: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            11: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            12: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            13: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            14: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            15: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            16: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            17: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            18: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            19: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            20: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Kırmızı', 15: 'Yeşil', 16: 'Yeşil' },
+            21: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            22: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            23: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            24: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            25: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            26: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            27: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Kırmızı' },
+            28: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Kırmızı', 15: 'Yeşil', 16: 'Kırmızı' },
+            29: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Kırmızı', 15: 'Yeşil', 16: 'Kırmızı' },
+            30: { 1: 'Yeşil', 2: 'Kırmızı', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Kırmızı', 15: 'Yeşil', 16: 'Kırmızı' },
+            31: { 1: 'Yeşil', 2: 'Kırmızı', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Kırmızı', 15: 'Yeşil', 16: 'Kırmızı' },
+            32: { 1: 'Kırmızı', 2: 'Kırmızı', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Yeşil', 11: 'Kırmızı', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Kırmızı', 15: 'Kırmızı', 16: 'Kırmızı' },
+            33: { 1: 'Yeşil', 2: 'Kırmızı', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Yeşil', 11: 'Kırmızı', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            34: { 1: 'Yeşil', 2: 'Kırmızı', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            35: { 1: 'Yeşil', 2: 'Kırmızı', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            36: { 1: 'Kırmızı', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Kırmızı', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            37: { 1: 'Kırmızı', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Kırmızı', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            38: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Kırmızı', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            39: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Kırmızı', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            40: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            41: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            42: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            43: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            44: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            45: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            46: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            47: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            48: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            49: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            50: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            51: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            52: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            53: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            54: { 1: 'Kırmızı', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            55: { 1: 'Kırmızı', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            56: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            57: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            58: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            59: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            60: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            61: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            62: { 1: 'Kırmızı', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            63: { 1: 'Kırmızı', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            64: { 1: 'Kırmızı', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            65: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            66: { 1: 'Kırmızı', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            67: { 1: 'Kırmızı', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            68: { 1: 'Kırmızı', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            69: { 1: 'Kırmızı', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Kırmızı', 13: 'Yeşil', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Yeşil' },
+            70: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Kırmızı' },
+            71: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Kırmızı', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Kırmızı', 16: 'Kırmızı' },
+            72: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Kırmızı', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            73: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Kırmızı', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            74: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            75: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Kırmızı', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            76: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            77: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            78: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Kırmızı', 15: 'Yeşil', 16: 'Yeşil' },
+            79: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            80: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            81: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Kırmızı', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            82: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            83: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            84: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            85: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            86: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            87: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            88: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            89: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Yeşil', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            90: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            91: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            92: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Yeşil', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            93: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Yeşil', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Yeşil', 7: 'Yeşil', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            94: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Kırmızı', 5: 'Yeşil', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Yeşil', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' },
+            95: { 1: 'Yeşil', 2: 'Yeşil', 3: 'Kırmızı', 4: 'Kırmızı', 5: 'Kırmızı', 6: 'Kırmızı', 7: 'Kırmızı', 8: 'Kırmızı', 9: 'Yeşil', 10: 'Kırmızı', 11: 'Yeşil', 12: 'Yeşil', 13: 'Yeşil', 14: 'Yeşil', 15: 'Yeşil', 16: 'Yeşil' }
+        };
+
+        // Doluluk göstergesi elementleri
+        const gaugeFill = document.getElementById('gaugeFill');
+        const totalShelves = 16; // Toplam raf sayısı
+
+        // İstatistikleri ve doluluk göstergesini güncelleyen fonksiyon
+        function updateStats() {
+            const occupied = document.querySelectorAll('.shelf.occupied').length;
+            updateOccupancyGauge(occupied); // Doluluk göstergesini dolu raf sayısına göre güncelle
+        }
+
+        // Doluluk oranını gösteren yayvan grafiği güncelleyen fonksiyon
+        function updateOccupancyGauge(occupiedCount) {
+            const occupancyPercentage = (occupiedCount / totalShelves) * 100;
+            
+            // %0 dolu (tamamen yeşil) -> 180 derece dönüş (yeşil kısmı görünür)
+            // %100 dolu (tamamen kırmızı) -> 0 derece dönüş (yeşil kısmı gizli)
+            const rotationDegree = (100 - occupancyPercentage) * 1.8; 
+            gaugeFill.style.transform = `rotate(${rotationDegree}deg)`;
+        }
+
+        // Raf durumunu belirli bir saniyeye göre güncelleyen fonksiyon
+        function updateShelvesForSecond(second) {
+            const adjustedSecond = Math.min(second, Object.keys(shelfData).length);
+            const secondData = shelfData[adjustedSecond];
+
+            if (!secondData) {
+                console.warn(`Saniye ${adjustedSecond} için veri bulunamadı.`);
+                return;
+            }
+
+            for (const shelfNumber in secondData) {
+                const shelfElement = document.querySelector(`.shelf[data-shelf="${shelfNumber}"]`);
+                if (shelfElement) {
+                    const color = secondData[shelfNumber];
+                    shelfElement.classList.remove('occupied', 'available');
+                    if (color === 'Kırmızı') {
+                        shelfElement.classList.add('occupied');
+                    } else if (color === 'Yeşil') {
+                        shelfElement.classList.add('available');
+                    }
+                }
+            }
+            updateStats(); // Raflar güncellendikten sonra istatistikleri ve doluluk göstergesini de güncelle
+        }
+
+        videoPlayer.addEventListener('timeupdate', () => {
+            const currentSecondRounded = Math.floor(videoPlayer.currentTime);
+            if (currentSecondRounded > 0 && currentSecondRounded !== videoPlayer._lastUpdatedSecond) {
+                updateShelvesForSecond(currentSecondRounded);
+                videoPlayer._lastUpdatedSecond = currentSecondRounded; // Son güncellenen saniyeyi sakla
+            }
+            // Video oynarken sürekli güncel metni yaz
+            if (!videoPlayer.paused && !videoPlayer.ended) {
+                videoStatus.innerHTML = '<p><span style="font-size: 1.2em; vertical-align: middle;">ⓘ</span> Video içeriği <a href="https://labs.google/flow/about" target="_blank" style="color: inherit; text-decoration: underline;">Flow</a> altyapısıyla geliştirilmiştir.</p>';
+            }
+        });
+
+        // Video yüklenecekken
+        videoPlayer.addEventListener('loadstart', () => {
+            videoStatus.innerHTML = '<p>⏳ Video yükleniyor...</p>';
+        });
+
+        // Video yüklendiğinde ve oynatılmaya hazır olduğunda
+        videoPlayer.addEventListener('canplay', () => {
+            updateShelvesForSecond(Math.floor(videoPlayer.currentTime)); // Mevcut saniyeyi hemen ayarla
+            videoPlayer.play(); // Sağlama için play çağrısı
+        });
+        
+        // Video yükleme hatası durumunda
+        videoPlayer.addEventListener('error', () => {
+            videoStatus.innerHTML = '<p>❌ Video yükleme hatası veya bulunamadı!</p>';
+        });
+
+        // Sayfa yüklendiğinde başlangıç durumunu ayarla
+        document.addEventListener('DOMContentLoaded', () => {
+            updateShelvesForSecond(1); // Sayfa yüklendiğinde ilk saniyenin durumunu göster
+        });
+
+        // Backend ile iletişim için global fonksiyon
+        window.librarySystem = {
+            loadVideo: function(videoUrl) {
+                videoPlayer.src = videoUrl;
+                videoPlayer.load();
+                // loadstart eventi mesajı otomatik gösterecek
+                videoPlayer.play(); // Yeni video yüklendiğinde otomatik oynat
+            },
+            getShelfStatus: function() {
+                const shelves = {};
+                document.querySelectorAll('.shelf').forEach(shelf => {
+                    const number = shelf.getAttribute('data-shelf');
+                    shelves[number] = shelf.classList.contains('occupied') ? 'Kırmızı' : 'Yeşil';
+                });
+                return shelves;
+            },
+            updateOccupancyGaugeManually: updateOccupancyGauge // Dışarıdan manuel tetikleme için
+        };
+    </script>
+</body>
+</html>
